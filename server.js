@@ -15,10 +15,20 @@ app.use(logger);
 
 app.set('view engine', 'ejs');
 
+// Data storage (in-memory for simplicity)
 let messages = [];
 
-app.get('/', (req, res) => {
-    res.render('index', { messages });
+// Routes
+app.get('/messages', (req, res) => {
+    let filteredMessages = [...messages];
+
+    // Example filtering by user (if 'user' query parameter is provided)
+    const { user } = req.query;
+    if (user) {
+        filteredMessages = filteredMessages.filter(msg => msg.user === user);
+    }
+
+    res.json(filteredMessages);
 });
 
 app.post('/messages', (req, res) => {
@@ -28,18 +38,31 @@ app.post('/messages', (req, res) => {
     res.status(201).json(message);
 });
 
+app.patch('/messages/:id', (req, res) => {
+    const { id } = req.params;
+    const { text } = req.body;
+
+    if (!messages[id]) {
+        return res.status(404).json({ error: 'Message not found' });
+    }
+
+    messages[id].text = text;
+    io.emit('messageUpdated', messages[id]);
+    res.status(200).json(messages[id]);
+});
+
 app.delete('/messages', (req, res) => {
     messages = [];
     io.emit('clearMessages');
     res.status(200).json({ message: 'Chat log cleared' });
 });
 
-io.on('connection', (socket) => {
-    socket.on('typing', (user) => {
-        socket.broadcast.emit('typing', user);
-    });
+// Views
+app.get('/', (req, res) => {
+    res.render('index', { messages });
 });
 
+// Error handling
 app.use((req, res, next) => {
     res.status(404).send('Not Found');
 });
