@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat App</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMysZCQfqf8YP4FOTFgZZRpb9fZL6/cmoA7a3d" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <style>
+        :root {
+            --background-color: #f9f9f9;
+            --text-color: #2c3e50;
+            --message-bg-color: #e8f4f8;
+            --message-bg-color-alt: #f0f0f0;
+            --avatar-bg-color: #3498db;
+            --button-bg-color: #2980b9;
+            --button-bg-hover-color: #3498db;
+        }
+
+        body.dark-mode {
+            --background-color: #2c3e50;
+            --text-color: #f9f9f9;
+            --message-bg-color: #34495e;
+            --message-bg-color-alt: #2c3e50;
+            --avatar-bg-color: #2980b9;
+            --button-bg-color: #1abc9c;
+            --button-bg-hover-color: #16a085;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #messages li {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            background-color: var(--message-bg-color);
+            display: flex;
+            align-items: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        #messages li:nth-child(odd) {
+            background-color: var(--message-bg-color-alt);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--avatar-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 10px;
+            font-weight: 700;
+        }
+
+        #message-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #message-form input {
+            padding: 12px;
+            margin: 5px;
+            width: calc(100% - 24px);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #message-form input:focus {
+            border-color: var(--button-bg-color);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 5px rgba(41, 128, 185, 0.5);
+        }
+
+        #message-form button {
+            padding: 12px 24px;
+            margin: 5px;
+            background-color: var(--button-bg-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        #message-form button:hover {
+            background-color: var(--button-bg-hover-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .fa-paper-plane {
+            margin-left: 5px;
+        }
+
+        #typing-indicator {
+            color: #555;
+            margin-top: -15px;
+            margin-bottom: 10px;
+        }
+
+        #theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--button-bg-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--button-bg-hover-color);
+        }
+    </style>
+
+</head>
+
+<body>
+    <body>
+        <button id="theme-toggle">Toggle Theme</button>
+        <h1>Chat Messages</h1>
+        <ul id="messages"></ul>
+        <div id="typing-indicator"></div>
+        <form id="message-form">
+            <input type="text" id="user" placeholder="Your name" required>
+            <input type="text" id="text" placeholder="Your message" required>
+            <button type="submit">Send <i class="fas fa-paper-plane"></i></button>
+        </form>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/script.js"></script>
+    </body>
+
+</html>
